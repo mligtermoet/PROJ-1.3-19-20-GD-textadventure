@@ -1,5 +1,5 @@
 ## MaQuest
-gamedeveloper :Milan Ligtermoet
+gamedeveloper : Milan Ligtermoet
 
 ### Korte omschrijving van de game
 ...
