@@ -29,11 +29,11 @@ let rooms = [];
 
 rooms[1] = new room(["right"], "media/room0.png", [], "");
 rooms[2] = new room(["left", "down"], "media/room1.png", [], "");
-rooms[3] = new room(["down"], "media/room2.png", [], "New Key");
+rooms[3] = new room(["down"], "media/room2.png", [], "Sleutel");
 rooms[4] = new room(["right"], "media/room3.png", [], "");
 rooms[5] = new room(["up", "left", "down"], "media/room4.png", [], "");
 rooms[6] = new room(["up", "down"], "media/room5.png", [], "");
-rooms[7] = new room(["right"], "media/room6.png", ["New Key"], "");
+rooms[7] = new room(["right"], "media/room6.png", ["Sleutel"], "");
 rooms[8] = new room(["left", "up", "right"], "media/room7.png", [], "");
 rooms[9] = new room(["left", "up"], "media/room8.png", [], "");
 
@@ -166,10 +166,10 @@ function getInput(e) {
 forwarddate();
 
 function invalidItems() {
-    ErrorMSG.innerHTML = "You are missing items to enter this room";
+    ErrorMSG.innerHTML = "Je hebt een sleutel nodig om deze kamer te betreden!";
 
     setTimeout(function () {
-        if (ErrorMSG.innerHTML == "You are missing items to enter this room") {
+        if (ErrorMSG.innerHTML == "Je hebt een sleutel nodig om deze kamer te betreden!") {
             ErrorMSG.innerHTML = "";
         }
     }, 3000);
