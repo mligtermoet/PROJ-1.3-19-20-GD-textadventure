@@ -1,121 +1,176 @@
-const divLocation = document.getElementById('location');
-const myPossibilities = document.getElementById('possibilities');
-const myInput = document.getElementById('myInput');
-const feedback = document.getElementById('feedback');
 const imageLocation = document.getElementById('imageLocation');
-const myDescription = document.getElementById('description');
-const myInventory = document.getElementById('inventory');
+const myInput = document.getElementById('myInput');
+const myOptions = document.getElementById('possibilities');
+const inv = document.getElementById('inv');
+const ErrorMSG = document.getElementById("error");
 
-let currentLocation = 4;
+let inventory = [];
 
-let locations = [];
-locations[0] = "kantine";
-locations[1] = "trap";
-locations[2] = "eind";
-locations[3] = "docentenkamer";
-locations[4] = "gang";
-locations[5] = "medialab";
-locations[6] = "toiletten";
-locations[7] = "klaslokaal";
-locations[8] = "examenlokaal";
 
-images = [];
-images[0] = "room0.jpg";
-images[1] = "room1.jpg";
-images[2] = "room2.jpg";
-images[3] = "room3.jpg";
-images[4] = "room4.jpg";
-images[5] = "room5.jpg";
-images[6] = "room6.jpg";
-images[7] = "room7.jpg";
-images[8] = "room8.jpg";
+class room {
+    constructor(options, imagePath, items, requiredItem) {
+        this.options = options;
+        this.image = imagePath;
+        this.items = items;
+        this.requiredItem = requiredItem;
+    }
+}
 
-directions = [];
-directions[0] = ["oost"];
-directions[1] = ["west", "zuid"];
-directions[2] = ["zuid"];
-directions[3] = ["oost"];
-directions[4] = ["noord", "west", "zuid"];
-directions[5] = ["zuid"];
-directions[6] = ["oost"];
-directions[7] = ["noord", "west", "oost"];
-directions[8] = ["noord", "west"];
 
-descriptions = [];
-descriptions[0] = "u staat in een kantine. Hier zitten studenten te eten of computerspelletjes te doen";
-descriptions[1] = "u staat op een trap naar de eerste etage. Om u heen lopen studenten omhoog en omlaag";
-descriptions[2] = "u heeft gewonnen";
-descriptions[3] = "u staat in de lerarenkamer. De leraren eten hier hun lunch of drinken koffie of thee";
-descriptions[4] = "u staat in een gang. Studenten en leraren lopen richting de klaslokalen";
-descriptions[5] = "u staat in het medialab. Hier kan geexperimenteerd worden met bijvoorbeeld virtual reality brillen";
-descriptions[6] = "u staat bij de toiletten";
-descriptions[7] = "u staat in een klaslokaal. De tafels staan recht achter elkaar en voorin is een projector en een smartboard";
-descriptions[8] = "u staat in het examenlokaal. Hier zijn de vierdejaars studenten bezig met het voorbereiden van hun examen";
+let grid = [
+    [
+        ["1", "2", "3"],
+        ["4", "5", "6"], 
+        ["7", "8", "9"]
+    ]
+];
 
-myInput.addEventListener('keydown', getInput, false);
+let rooms = [];
 
-function getInput(evt) {
-  if (evt.key == "Enter") {
-    let inputArray = myInput.value.split(" ");
+rooms[1] = new room(["right"], "media/room0.png", [], "");
+rooms[2] = new room(["left", "down"], "media/room1.png", [], "");
+rooms[3] = new room(["down"], "media/room2.png", [], "New Key");
+rooms[4] = new room(["right"], "media/room3.png", [], "");
+rooms[5] = new room(["up", "left", "down"], "media/room4.png", [], "");
+rooms[6] = new room(["up", "down"], "media/room5.png", [], "");
+rooms[7] = new room(["right"], "media/room6.png", ["New Key"], "");
+rooms[8] = new room(["left", "up", "right"], "media/room7.png", [], "");
+rooms[9] = new room(["left", "up"], "media/room8.png", [], "");
 
-    if (inputArray[0] == "ga") {
-      if (directions[currentLocation].indexOf(inputArray[1]) != -1) {
-        switch (inputArray[1]) {
-          case "noord":
-            currentLocation -= 3;
-            break;
-          case "zuid":
-            currentLocation += 3;
-            break;
-          case "oost":
-            currentLocation += 1;
-            break;
-          case "west":
-            currentLocation -= 1;
-            break;
+
+let currentX = 0;
+let currentY = 0;
+let currentZ = 0;
+
+function getPlayerRoom() {
+    return grid[currentX][currentY][currentZ];
+}
+
+function forwarddate() {
+
+    imageLocation.src = rooms[getPlayerRoom()].image;
+
+    let optionsMSG = "";
+    for (let i = 0; i < rooms[getPlayerRoom()].options.length; i++) {
+        optionsMSG += "<li>" + rooms[getPlayerRoom()].options[i] + "</li>"
+    }
+
+    if (rooms[getPlayerRoom()].items.length != 0) {
+        optionsMSG += "pickup ";
+    }
+    myOptions.innerHTML = optionsMSG;
+
+    let items = "";
+    for (let i = 0; i < inventory.length; i++) {
+        items += "<li>" + inventory[i] + "</li>";
+        if (i + 1 < inventory.length) {
+           items += " - "
         }
-      } else {
-        feedback.innerHTML = "dat mag niet";
-        setTimeout(removeFeedback, 2000);
-
-      }
-      giveLocation();
-      myInput.value = "";
     }
 
-    if (inputArray[0] == "pak") {
-      console.log('ga wat pakken');
-      myInput.value = "";
-    }
+    inv.innerHTML = items;
+}
+myInput.addEventListener('keydown', getInput, false);
+function getInput(e) {
+    if (e.key == "Enter") {
+        let inputArray = myInput.value.split(" ");
 
-    if (inputArray[0] == "gebruik"){
-      console.log('ga wat gebruiken');
-      myInput.value = "";
-    }
+        let isOption = false;
+        for (let i = 0; i < rooms[getPlayerRoom()].options.length; i++) {
+            if (rooms[getPlayerRoom()].options[i] == inputArray[0]) {
+                isOption = true;
+            }
+        }
 
-    if (inputArray[0] != "ga" && inputArray[0] != "pak" && inputArray[0] != "gebruik" ){
-      feedback.innerHTML = "mogelijke commando's zijn: ga, pak, gebruik en help";
-      myInput.value = "";
-      setTimeout(removeFeedback, 4000);
-    }
+        if (rooms[getPlayerRoom()].items.length != 0) {
+            if (inputArray[0] === "pickup") {
+                isOption = true;
+            }
+        }
 
-  }
+        if (isOption) {
+            console.log("true")
+            switch (inputArray[0]) {
+                case "down":
+                    currentY += 1;
+                    if (rooms[getPlayerRoom()].requiredItem != "") {
+                        if (!(inventory.includes(rooms[getPlayerRoom()].requiredItem))) {
+                            currentY -= 1;
+                            invalidItems();
+                        } else {
+                            inventory = inventory.filter(el => el !== rooms[getPlayerRoom()].requiredItem);
+                        }
+                    }
+                    break;
+                case "right":
+                    currentZ += 1;
+                    if (rooms[getPlayerRoom()].requiredItem != "") {
+                        if (!(inventory.includes(rooms[getPlayerRoom()].requiredItem))) {
+                            console.log("je hebt niet de juiste items")
+                            currentZ -= 1;
+                            invalidItems();
+                        } else {
+                            inventory = inventory.filter(el => el !== rooms[getPlayerRoom()].requiredItem);
+                        }
+                    }
+                    break;
+                case "left":
+                    currentZ -= 1;
+                    if (rooms[getPlayerRoom()].requiredItem != "") {
+                        if (!(inventory.includes(rooms[getPlayerRoom()].requiredItem))) {
+                            currentZ += 1;
+                            invalidItems();
+                        } else {
+                            inventory = inventory.filter(el => el !== rooms[getPlayerRoom()].requiredItem);
+                        }
+                    }
+                    break;
+                case "up":
+                    currentY -= 1;
+                    if (rooms[getPlayerRoom()].requiredItem != "") {
+                        if (!(inventory.includes(rooms[getPlayerRoom()].requiredItem))) {
+                            currentY += 1;
+                            invalidItems();
+                        } else {
+                            inventory = inventory.filter(el => el !== rooms[getPlayerRoom()].requiredItem);
+                        }
+                    }
+                    break;
+                case "pickup":
+                    let item = Math.floor(Math.random() * rooms[getPlayerRoom()].items.length);
+                    console.log(rooms[getPlayerRoom()].items[item]);
+                    console.log(item);
+
+                    // doe het item van de room in jou inventory.
+                    inventory.push(rooms[getPlayerRoom()].items[item]);
+
+                    // idk waarom maar zo remove je iets uit de items array van een room... "splice werkte niet"
+                    rooms[getPlayerRoom()].items = rooms[getPlayerRoom()].items.filter(el => el !== rooms[getPlayerRoom()].items[item]);
+                    break;
+            }
+        } else {
+            ErrorMSG.innerHTML = "Invalid movement";
+
+            setTimeout(function () {
+                if (ErrorMSG.innerHTML == "Invalid movement") {
+                    ErrorMSG.innerHTML = "";
+                }
+            }, 1500);
+        }
+
+        forwarddate();
+        myInput.value = "";
+    }
 }
 
-function giveLocation() {
-  divLocation.innerHTML = locations[currentLocation];
-  myDescription.innerHTML = descriptions[currentLocation];
-  imageLocation.src = "media/" + images[currentLocation];
-  myDirections = "mogelijke richtingen zijn: ";
-  for (let i = 0; i < directions[currentLocation].length; i++) {
-    myDirections += "<li>" + directions[currentLocation][i] + "</li>";
-  }
-  myPossibilities.innerHTML = myDirections;
-  myInventory.innerHTML = "uw inventory is leeg";
-}
+forwarddate();
 
-function removeFeedback() {
-  feedback.innerHTML = "";
-}
+function invalidItems() {
+    ErrorMSG.innerHTML = "You are missing items to enter this room";
 
-giveLocation();
+    setTimeout(function () {
+        if (ErrorMSG.innerHTML == "You are missing items to enter this room") {
+            ErrorMSG.innerHTML = "";
+        }
+    }, 3000);
+}
